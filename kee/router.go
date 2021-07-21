@@ -23,6 +23,7 @@ func (r Router) Handle(c *Context) {
 
 	if handler, ok := r.handlers[key]; ok {
 		handler(c)
+		return
 	}
 
 	// 错误处理：没有找到handler
