@@ -6,8 +6,8 @@ type Router struct {
 	handlers map[string]func(c *Context)
 }
 
-func NewRouter() Router {
-	return Router{handlers: make(map[string]func(c *Context))}
+func NewRouter() *Router {
+	return &Router{handlers: make(map[string]func(c *Context))}
 }
 
 func (r Router) AddRoute(method string, url string, handler func(c *Context)) {

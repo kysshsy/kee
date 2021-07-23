@@ -6,7 +6,7 @@ import (
 )
 
 type Engine struct {
-	Router Router
+	Router *Router
 }
 
 func New() *Engine {
