@@ -6,14 +6,16 @@ import (
 	"net/http"
 )
 
+type HandlerFunc func(*Context)
+
 type Engine struct {
-	Router *Router
+	router *router
 }
 
 func New() *Engine {
 
 	ret := new(Engine)
-	ret.Router = NewRouter()
+	ret.router = newRouter()
 	return ret
 }
 
@@ -21,16 +23,16 @@ func (e *Engine) ServeHTTP(respWriter http.ResponseWriter, req *http.Request) {
 	//
 	context := NewContext(respWriter, req)
 
-	e.Router.Handle(context)
+	e.router.handle(context)
 
 }
 
-func (e *Engine) GET(url string, handler func(*Context)) {
-	e.Router.AddRoute("GET", url, handler)
+func (e *Engine) GET(pattern string, handler func(*Context)) {
+	e.router.addRoute("GET", pattern, handler)
 }
 
-func (e *Engine) POST(url string, handler func(*Context)) {
-	e.Router.AddRoute("POST", url, handler)
+func (e *Engine) POST(pattern string, handler func(*Context)) {
+	e.router.addRoute("POST", pattern, handler)
 }
 
 type H map[string]interface{}
@@ -39,14 +41,16 @@ type Context struct {
 	Writer http.ResponseWriter
 	Req    *http.Request
 
-	Url    string
+	Path   string
 	Method string
 
 	StatusCode int
+
+	Params map[string]string
 }
 
 func NewContext(writer http.ResponseWriter, req *http.Request) *Context {
-	return &Context{Writer: writer, Req: req, Url: req.URL.Path, Method: req.Method}
+	return &Context{Writer: writer, Req: req, Path: req.URL.Path, Method: req.Method}
 }
 
 // getter
