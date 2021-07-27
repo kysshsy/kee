@@ -82,7 +82,7 @@ func (r router) getRoutes(method string) []*node {
 		return nil
 	}
 	root := r.roots[method]
-	nodes := []*node{}
+	var nodes []*node
 
 	root.travel(&nodes)
 	return nodes

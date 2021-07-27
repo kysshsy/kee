@@ -55,6 +55,11 @@ func NewContext(writer http.ResponseWriter, req *http.Request) *Context {
 
 // getter
 
+func (c *Context) Param(key string) string {
+	value, _ := c.Params[key]
+	return value
+}
+
 func (c *Context) Query(key string) string {
 	values := c.Req.Header.Values(key)
 
