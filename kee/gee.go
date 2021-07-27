@@ -19,6 +19,13 @@ func New() *Engine {
 	return ret
 }
 
+func (e *Engine) Run(addr string) {
+	err := http.ListenAndServe(addr, e)
+	if err != nil {
+		return
+	}
+}
+
 func (e *Engine) ServeHTTP(respWriter http.ResponseWriter, req *http.Request) {
 	//
 	context := NewContext(respWriter, req)
@@ -99,7 +106,7 @@ func (c *Context) String(code int, format string, values ...interface{}) {
 	c.Writer.Write([]byte(fmt.Sprintf(format, values...)))
 }
 
-func (c *Context) Json(code int, obj interface{}) {
+func (c *Context) JSON(code int, obj interface{}) {
 	c.SetHeader("Content-Type", "application/json")
 
 	jsonByte, err := json.Marshal(obj)
