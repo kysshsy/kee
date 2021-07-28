@@ -1,8 +1,6 @@
 package kee
 
 import (
-	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 )
@@ -70,87 +68,3 @@ func (group *RouterGroup) POST(pattern string, handler HandlerFunc) {
 }
 
 type H map[string]interface{}
-
-type Context struct {
-	Writer http.ResponseWriter
-	Req    *http.Request
-
-	Path   string
-	Method string
-
-	StatusCode int
-
-	Params map[string]string
-}
-
-func NewContext(writer http.ResponseWriter, req *http.Request) *Context {
-	return &Context{Writer: writer, Req: req, Path: req.URL.Path, Method: req.Method}
-}
-
-// getter
-
-func (c *Context) Param(key string) string {
-	value, _ := c.Params[key]
-	return value
-}
-
-func (c *Context) Query(key string) string {
-	values := c.Req.Header.Values(key)
-
-	if len(values) == 0 {
-		return ""
-	}
-
-	return values[0]
-}
-
-func (c *Context) QueryArray(key string) []string {
-	return c.Req.Header.Values(key)
-}
-
-func (c *Context) GetForm(key string) string {
-	return c.Req.Form.Get(key)
-}
-
-// setters
-
-func (c *Context) SetHeader(key string, value string) {
-	c.Writer.Header().Set(key, value)
-}
-
-func (c *Context) Status(code int) {
-	c.StatusCode = code
-	c.Writer.WriteHeader(code)
-}
-
-func (c *Context) Error(code int, emsg string) {
-	http.Error(c.Writer, emsg, code)
-}
-
-func (c *Context) String(code int, format string, values ...interface{}) {
-	c.SetHeader("Contnt-Type", "text/plain")
-	c.Status(code)
-	c.Writer.Write([]byte(fmt.Sprintf(format, values...)))
-}
-
-func (c *Context) JSON(code int, obj interface{}) {
-	c.SetHeader("Content-Type", "application/json")
-
-	jsonByte, err := json.Marshal(obj)
-	if err != nil {
-		c.Error(http.StatusInternalServerError, err.Error())
-	}
-	c.Status(code)
-	c.Writer.Write(jsonByte)
-}
-
-func (c *Context) HTML(code int, html string) {
-	c.SetHeader("Content-Type", "text/html")
-	c.Status(code)
-	c.Writer.Write([]byte(html))
-}
-
-func (c *Context) Data(code int, data []byte) {
-	c.Status(code)
-	c.Writer.Write(data)
-}
