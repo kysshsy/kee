@@ -3,20 +3,31 @@ package kee
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 )
 
 type HandlerFunc func(*Context)
 
+type RouterGroup struct {
+	prefix     string
+	middleware []HandlerFunc
+	engine     *Engine
+}
+
 type Engine struct {
+	*RouterGroup
 	router *router
+	groups []RouterGroup
 }
 
 func New() *Engine {
-
-	ret := new(Engine)
-	ret.router = newRouter()
-	return ret
+	engine := Engine{
+		router: newRouter(),
+	}
+	engine.RouterGroup = &RouterGroup{engine: &engine}
+	// TODO: groups 置nil
+	return &engine
 }
 
 func (e *Engine) Run(addr string) {
@@ -34,12 +45,28 @@ func (e *Engine) ServeHTTP(respWriter http.ResponseWriter, req *http.Request) {
 
 }
 
-func (e *Engine) GET(pattern string, handler func(*Context)) {
-	e.router.addRoute("GET", pattern, handler)
+func (group *RouterGroup) Group(path string) *RouterGroup {
+	engine := group.engine
+	newGroup := RouterGroup{
+		prefix: group.prefix + path,
+		engine: engine,
+	}
+	engine.groups = append(engine.groups, newGroup)
+	return &newGroup
 }
 
-func (e *Engine) POST(pattern string, handler func(*Context)) {
-	e.router.addRoute("POST", pattern, handler)
+func (group *RouterGroup) addRoute(method string, comp string, handler HandlerFunc) {
+	pattern := method + comp
+	log.Printf("Route %4s - %s", method, pattern)
+	group.engine.router.addRoute(method, pattern, handler)
+}
+
+func (group *RouterGroup) GET(pattern string, handler HandlerFunc) {
+	group.addRoute("GET", pattern, handler)
+}
+
+func (group *RouterGroup) POST(pattern string, handler HandlerFunc) {
+	group.addRoute("POST", pattern, handler)
 }
 
 type H map[string]interface{}
