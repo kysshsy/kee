@@ -67,8 +67,13 @@ func (c *Context) Error(code int, err interface{}) {
 	}
 }
 
+func (c *Context) Fail(code int, err string) {
+	c.index = len(c.handlers)
+	c.JSON(code, H{"message": err})
+}
+
 func (c *Context) String(code int, format string, values ...interface{}) {
-	c.SetHeader("Contnt-Type", "text/plain")
+	c.SetHeader("Content-Type", "text/plain")
 	c.Status(code)
 	c.Writer.Write([]byte(fmt.Sprintf(format, values...)))
 }
