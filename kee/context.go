@@ -7,15 +7,17 @@ import (
 )
 
 type Context struct {
+	// origin object
 	Writer http.ResponseWriter
 	Req    *http.Request
 
+	// request info
 	Path   string
 	Method string
-
-	StatusCode int
-
 	Params map[string]string
+
+	// response info
+	StatusCode int
 }
 
 func NewContext(writer http.ResponseWriter, req *http.Request) *Context {
