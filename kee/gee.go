@@ -27,7 +27,7 @@ func New() *Engine {
 		router: newRouter(),
 	}
 	engine.RouterGroup = &RouterGroup{engine: &engine}
-	// TODO: groups 置nil
+	engine.groups = []*RouterGroup{engine.RouterGroup}
 	return &engine
 }
 
@@ -39,7 +39,6 @@ func (e *Engine) Run(addr string) {
 }
 
 func (e *Engine) ServeHTTP(respWriter http.ResponseWriter, req *http.Request) {
-	//
 	context := NewContext(respWriter, req)
 	path := context.Path
 
