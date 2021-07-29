@@ -96,9 +96,12 @@ func (r router) handle(c *Context) {
 		c.Params = params
 		key := c.Method + "-" + n.pattern
 		handler := r.handlers[key]
-		handler(c)
+		c.handlers = append(c.handlers, handler)
 
 	} else {
 		c.String(http.StatusNotFound, "404 NOT FOUND: %s \n", c.Path)
 	}
+
+	// 找不到也要执行中间件
+	c.Next()
 }

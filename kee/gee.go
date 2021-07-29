@@ -3,6 +3,7 @@ package kee
 import (
 	"log"
 	"net/http"
+	"strings"
 )
 
 type HandlerFunc func(*Context)
@@ -38,6 +39,12 @@ func (e *Engine) Run(addr string) {
 func (e *Engine) ServeHTTP(respWriter http.ResponseWriter, req *http.Request) {
 	//
 	context := NewContext(respWriter, req)
+	path := context.Path
+
+	for _, group := range e.groups {
+		strings.HasPrefix(path, group.prefix)
+		context.handlers = append(context.handlers, group.middleware...)
+	}
 
 	e.router.handle(context)
 
