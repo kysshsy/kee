@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"path"
 	"runtime"
 	"strings"
 	"time"
@@ -125,4 +126,33 @@ func Recovery() HandlerFunc {
 		}()
 		c.Next() // 很重要 不然defer回提前执行 不在middlerware的下半部分 而是上半部分
 	}
+}
+
+func createStaticHandler(prefix string, rootPath string) HandlerFunc {
+	// fs
+	filesystem := http.Dir(rootPath)
+	handler := http.StripPrefix(prefix, http.FileServer(filesystem))
+
+	return func(c *Context) {
+
+		filename := c.Param("filename")
+
+		if _, err := filesystem.Open(filename); err != nil {
+			c.Fail(500, "error")
+			return
+		}
+
+		handler.ServeHTTP(c.Writer, c.Req)
+	}
+}
+
+func (group *RouterGroup) Static(relativePath, rootPath string) {
+
+	urlPrefix := path.Join(group.prefix, relativePath)
+
+	handler := createStaticHandler(urlPrefix, rootPath)
+	// 注册动态路由
+	pattern := urlPrefix + "/*filename"
+	group.GET(pattern, handler)
+
 }
